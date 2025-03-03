@@ -230,33 +230,45 @@ class BroadcastTo(TensorOp):
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
+        
+        
         ### BEGIN YOUR SOLUTION
-        ##这里是输入b的shape，也是将要return的梯度值的shape
-        origin_shape = node.inputs[0].shape
-        ##输出b_expand的shape,也是out_grad的shape
-        output_shape = out_grad.shape
-        #需要求和的维度是哪几个。这个维度针对的是out_grad中的维度，算出是哪几个维度，用sum一计算就ok了
-        expand_e = []
-        #需要从后往前算，因为当维度缺失时，是从后往前扩展的
-        for i in range(-1,-len(output_shape)-1,-1):
-                # origin_shape的长度可能会比output_shape短，
-                # 比如origin_shape=(1,)，output_shapee=(1,2)。
-            if(-i>len(origin_shape)):
-                expand_e.append(i)
-                continue
-            # 如果目标维度和输出维度不一样，那么就需要扩展
-            ## 比如origin_shape=(1,2)，output_shapee=(4,2)。
-            if(origin_shape[i] != output_shape[i]):
-                expand_e.append(i)
-                
-        # out_grad进行sum运算，运算的轴axes是b_exp相对于b经过拓展的维度
-        ans = summation(out_grad,expand_e)
-        
-        # 因为res的形状可能与lhs(也就是b)不相同，所以这里需要reshape到b原本的维度上。这种情况一般出现在b的维度比较少的时候。
-        # 比如b.shape=(4,)，b_expand.shape=(4,2),此时即便b_expand求和完毕后也是（4，1)的shape。
-        return reshape(ans,origin_shape)
-        
+        ori_shape = node.inputs[0].shape
+        shrink_dims = [i for i in range(len(self.shape))]
+        for i, (ori, cur) in enumerate(zip(reversed(ori_shape), reversed(self.shape))):
+            if ori == cur:
+                shrink_dims[len(self.shape) - i - 1] = -1
+        shrink_dims = tuple(filter(lambda x: x >= 0, shrink_dims))
+        return out_grad.sum(shrink_dims).reshape(ori_shape)
         ### END YOUR SOLUTION
+        
+        # ### BEGIN YOUR SOLUTION
+        # ##这里是输入b的shape，也是将要return的梯度值的shape
+        # origin_shape = node.inputs[0].shape
+        # ##输出b_expand的shape,也是out_grad的shape
+        # output_shape = out_grad.shape
+        # #需要求和的维度是哪几个。这个维度针对的是out_grad中的维度，算出是哪几个维度，用sum一计算就ok了
+        # expand_e = []
+        # #需要从后往前算，因为当维度缺失时，是从后往前扩展的
+        # for i in range(-1,-len(output_shape)-1,-1):
+        #         # origin_shape的长度可能会比output_shape短，
+        #         # 比如origin_shape=(1,)，output_shapee=(1,2)。
+        #     if(-i>len(origin_shape)):
+        #         expand_e.append(i)
+        #         continue
+        #     # 如果目标维度和输出维度不一样，那么就需要扩展
+        #     ## 比如origin_shape=(1,2)，output_shapee=(4,2)。
+        #     if(origin_shape[i] != output_shape[i]):
+        #         expand_e.append(i)
+                
+        # # out_grad进行sum运算，运算的轴axes是b_exp相对于b经过拓展的维度
+        # ans = summation(out_grad,expand_e)
+        
+        # # 因为res的形状可能与lhs(也就是b)不相同，所以这里需要reshape到b原本的维度上。这种情况一般出现在b的维度比较少的时候。
+        # # 比如b.shape=(4,)，b_expand.shape=(4,2),此时即便b_expand求和完毕后也是（4，1)的shape。
+        # return reshape(ans,origin_shape)
+        
+        # ### END YOUR SOLUTION
 
 
 def broadcast_to(a, shape):

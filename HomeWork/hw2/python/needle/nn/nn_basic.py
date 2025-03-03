@@ -234,16 +234,27 @@ class LayerNorm1d(Module):
         ### END YOUR SOLUTION
 
 
+# class Dropout(Module):
+#     def __init__(self, p=0.5):
+#         super().__init__()
+#         self.p = p
+
+#     def forward(self, x: Tensor) -> Tensor:
+#         ### BEGIN YOUR SOLUTION
+#         # 妈的这里p=1-self.p，写错了写成了p=self.p了，着为什么跑测试的时候没报错
+#         return ops.divide_scalar(ops.multiply(x,init.randb(*(x.shape),p=1-self.p, device=x.device, dtype=x.dtype)),(1-self.p))
+#         ### END YOUR SOLUTION
 class Dropout(Module):
-    def __init__(self, p=0.5):
+    def __init__(self, p = 0.5):
         super().__init__()
         self.p = p
 
     def forward(self, x: Tensor) -> Tensor:
-        ### BEGIN YOUR SOLUTION
-        return ops.divide_scalar(ops.multiply(x,init.randb(*(x.shape),p=self.p)),(1-self.p))
-        ### END YOUR SOLUTION
-
+        if self.training:
+            mask = init.randb(*x.shape, p=1 - self.p, device=x.device, dtype=x.dtype) / (1 - self.p)
+            return x * mask
+        else:
+            return x
 
 class Residual(Module):
     def __init__(self, fn: Module):

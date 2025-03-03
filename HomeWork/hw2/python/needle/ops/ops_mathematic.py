@@ -290,6 +290,8 @@ class Summation(TensorOp):
         ### BEGIN YOUR SOLUTION
         new_shape = list(node.inputs[0].shape)
         axes = range(len(new_shape)) if self.axes is None else self.axes
+        if isinstance(self.axes,Number):
+            axes = (self.axes,)
         for axis in axes:
             new_shape[axis] = 1
         return out_grad.reshape(new_shape).broadcast_to(node.inputs[0].shape)

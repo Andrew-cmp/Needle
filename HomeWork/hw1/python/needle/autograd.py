@@ -385,8 +385,8 @@ def compute_gradient_of_variables(output_tensor, out_grad):
         # 已知这个node关于y的梯度
         # 可以计算得到这个node的input node关于y的梯度
         # 这个node的关于y的梯度是这个node的所有输出边的梯度的和
-        sum_node_list(node_to_output_grads_list[node])
-        output_grads = node_to_output_grads_list[node]
+        ajonit = sum_node_list(node_to_output_grads_list[node])
+        node.grad = ajonit
         # 这时是叶子节点，没有op
         if node.op is None:
             continue
@@ -395,14 +395,13 @@ def compute_gradient_of_variables(output_tensor, out_grad):
         # 这个node的op
         op = node.op
         # 这个node对每个输入的梯度
-        input_grads = op.gradient_as_tuple(output_grads, node)
+        input_grads = op.gradient_as_tuple(ajonit, node)
         # 对每个node的输入节点，把这个node的关于此节点的梯度加到这个节点的梯度列表里
         for i in range(len(inputs)):
             input_node = inputs[i]
             if input_node not in node_to_output_grads_list:
                 node_to_output_grads_list[input_node] = []
             node_to_output_grads_list[input_node].append(input_grads[i])
-  
     ### END YOUR SOLUTION
 
 
@@ -424,6 +423,7 @@ def find_topo_sort(node_list: List[Value]) -> List[Value]:
     ## 肯定要对每个node都做一次dfs，因为不一定只有一个输出
     for node in node_list:
         topo_sort_dfs(node, visited, topo_out)
+    return topo_out
     ### END YOUR SOLUTION
 
 

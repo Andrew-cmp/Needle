@@ -42,10 +42,15 @@ class SGD(Optimizer):
                 
                 
                 #将weight_decay前置到 加入到grad中以进行处理，而不是在更新param.data的时候处理
+                
                 if self.weight_decay > 0:
-                    grad = param.grad.data + self.weight_decay * param.data
+                    ## 如果这样用的话，结果有可能出现float64的情况，所以还是用ndl.Tensor来处理，但这是为什么？param.grad.data为什么会变成float64？
+                    #grad = param.grad.data + self.weight_decay * param.data
+                    grad = ndl.Tensor(param.grad, dtype='float32').data + param.data * self.weight_decay
                 else:
-                    grad = param.grad.data
+                    ## 如果这样用的话，结果有可能出现float64的情况，所以还是用ndl.Tensor来处理，但这是为什么？param.grad.data为什么会变成float64？
+                    #grad = param.grad.data
+                    grad = ndl.Tensor(param.grad, dtype='float32').data + param.data * self.weight_decay
                 self.u[param].data = self.momentum*self.u[param].data + (1-self.momentum)*grad
                 param.data = param.data - self.lr*self.u[param]
                 

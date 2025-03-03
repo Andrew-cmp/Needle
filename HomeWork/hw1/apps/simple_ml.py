@@ -95,9 +95,9 @@ def softmax_loss(Z, y_one_hot):
     """
     ### BEGIN YOUR SOLUTION
     power = ndl.exp(Z)
-    sum = ndl.sum(power, axis=1, keepdims=True)
+    sum = ndl.summation(power, axes=1)
     log = ndl.log(sum)
-    loss = ndl.sum(log - Z * y_one_hot, axis=1)
+    loss = ndl.summation(log - Z * y_one_hot, axes=1)
     return ndl.mean(loss)
     ### END YOUR SOLUTION
 
